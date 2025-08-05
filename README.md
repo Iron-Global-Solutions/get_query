@@ -39,12 +39,15 @@ import 'package:get_query/get_query.dart';
 
 ## Usage
 
+```
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupGetQuery(); // ✅ initialize everything
   runApp(const MyApp());
 }
+```
 
+```
 import 'package:get/get.dart';
 import 'package:get_query/get_query.dart';
 import 'package:tanstak_flutter_demo/models/post.dart';
@@ -66,7 +69,8 @@ class PostsController extends GetxController {
     );
   }
 }
-
+```
+```
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tanstak_flutter_demo/screens/posts/posts_controller.dart';
@@ -106,9 +110,10 @@ class PostScreen extends GetView<PostsController> {
     );
   }
 }
-
+```
 ### 📄 Infinite Pagination Example
 
+```
 import 'package:get/get.dart';
 import 'package:ta_query/models/posts.dart';
 import 'package:ta_query/repo/paginated_response.dart';
@@ -143,11 +148,11 @@ class PostController extends GetxController {
     );
   }
 }
+```
 
 
 
-
-
+```
 class PostScreen extends GetView<PostController> {
   const PostScreen({super.key});
 
@@ -197,6 +202,7 @@ class PostScreen extends GetView<PostController> {
   }
 }
 
+```
 
 
 ## Additional information
