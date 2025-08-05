@@ -1,0 +1,1 @@
+enum RefetchType { active, inactive, all, none }

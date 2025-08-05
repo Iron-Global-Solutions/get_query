@@ -1,0 +1,1 @@
+enum FetchDirection { forward, backward }
