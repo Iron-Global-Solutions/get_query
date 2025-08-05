@@ -35,8 +35,9 @@ dependencies:
   ```
 
 ## Then import it:
+```
 import 'package:get_query/get_query.dart';
-
+```
 ## Usage
 
 ```
