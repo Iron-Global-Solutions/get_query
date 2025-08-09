@@ -1,6 +1,6 @@
 name: get_query
 description: "A TanStack Query-inspired async caching and pagination package for Flutter + GetX."
-version: 1.0.0+2
+version: 1.0.0+3
 homepage: https://github.com/Iron-Global-Solutions/get_query
 
 environment:

@@ -208,7 +208,7 @@ class PostScreen extends GetView<PostController> {
 
 ## Additional information
 
-This package is inspired by TanStack Query (React Query) and adapts its core principles to Flutter and GetX.
+This package is inspired by TanStack Query (React Query)  and adapts its core principles to Flutter and GetX.
 
 ## Contributing / Feedback
 
