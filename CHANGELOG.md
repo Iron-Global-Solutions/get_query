@@ -1,5 +1,5 @@
-## 1.0.0+4
-- fix(useInfiniteQuery): load cached data immediately before fetching updates
+## 1.0.0+5
+- feat(queryClient): add clear method
 
 ### Initial Release
 
