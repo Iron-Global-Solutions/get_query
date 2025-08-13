@@ -1,6 +1,7 @@
 name: get_query
 description: "A TanStack Query-inspired async caching and pagination package for Flutter + GetX."
-version: 1.0.0+3
+version: 1.0.0+4
+- fix(useInfiniteQuery): load cached data immediately before fetching updates
 homepage: https://github.com/Iron-Global-Solutions/get_query
 
 environment:
