@@ -247,7 +247,6 @@ class QueryClient {
     }
   }
 
-
   // invalidateQueries
   Future<void> invalidateQueries<TPageParam>({
     String? queryKey,
@@ -378,6 +377,11 @@ class QueryClient {
     }
   }
 
+  // clear
+  void clear() {
+    _cache.clear();
+    _infinitcache.clear();
+  }
   // helpers
 
   Future<T> _runWithRetry<T>({
@@ -520,7 +524,7 @@ class QueryClient {
     });
   }
 
-    InfinitQuery<TQueryFnData, T, TPageParam>?
+  InfinitQuery<TQueryFnData, T, TPageParam>?
   getInfiniteQueryState<TQueryFnData, T, TPageParam>(String queryKey) {
     final query =
         _infinitcache.getQuery(queryKey)
@@ -528,5 +532,4 @@ class QueryClient {
 
     return query;
   }
-
 }
