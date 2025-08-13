@@ -56,6 +56,10 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
     options.queryKey,
   );
 
+  if (cached != null && cached.isStale(options.staleTime)) {
+    data.value = cached.data;
+  }
+
   if (cached != null && !cached.isStale(options.staleTime)) {
     final qData = cached.data;
     if (qData != null) {
@@ -335,4 +339,3 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
     },
   );
 }
-
