@@ -1,4 +1,4 @@
-## 1.0.0+6
+## 1.0.0+7
 - feat(query): add refetch support to useQuery and useInfiniteQuery
 
 ### Initial Release

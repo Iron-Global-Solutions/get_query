@@ -119,7 +119,6 @@ UseQueryResult<T> useQuery<T>({
       isError.value = true; 
       status.value = QueryStatus.error;
     } finally {
-      isLoading.value = false;
       isFetching.value = false;
     }
   }
@@ -131,6 +130,9 @@ UseQueryResult<T> useQuery<T>({
   if (existingQuery != null) {
     if (!existingQuery.options!.enabled || !existingQuery.isStale(staleTime)) {
       updateFromQuery(existingQuery);
+    }
+    if (existingQuery.isStale(staleTime)) {
+      refetch();
     }
   } else {
     fetch();
