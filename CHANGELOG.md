@@ -1,5 +1,5 @@
-## 1.0.0+5
-- feat(queryClient): add clear method
+## 1.0.0+6
+- feat(query): add refetch support to useQuery and useInfiniteQuery
 
 ### Initial Release
 

@@ -21,6 +21,8 @@ class UseInfiniteQueryResult<TQueryFnData, TPageParam> {
   final Future<void> Function() fetchNextPage;
   final Future<void> Function() fetchPreviousPage;
 
+  final Future<void> Function() refetch; 
+
   UseInfiniteQueryResult({
     required this.data,
     required this.isLoading,
@@ -32,6 +34,7 @@ class UseInfiniteQueryResult<TQueryFnData, TPageParam> {
     required this.hasPreviousPage,
     required this.fetchNextPage,
     required this.fetchPreviousPage,
+    required this.refetch, 
   });
 }
 
@@ -55,6 +58,120 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
   final cached = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
     options.queryKey,
   );
+
+  void updateIsFetching() {
+    isFetching.value = _fetchingQueries.contains(options.queryKey);
+  }
+
+  void updateFromQuery(InfinitQuery<TQueryFnData, T, TPageParam> q) {
+    final qData = q.data;
+    if (qData == null) return;
+
+    List<TPageParam> pageParams = [];
+    try {
+      pageParams = qData.pageParams.cast<TPageParam>();
+    } catch (_) {
+      return;
+    }
+
+    data.value = InfiniteData<TQueryFnData, TPageParam>(
+      pages: qData.pages,
+      pageParams: pageParams,
+    );
+
+    isLoading.value = q.isLoading;
+    updateIsFetching();
+    isSuccess.value = q.status == QueryStatus.success;
+    isError.value = q.status == QueryStatus.error;
+    error.value = q.error;
+
+    if (qData.pages.isNotEmpty) {
+      final next = options.getNextPageParam(
+        qData.pages.last,
+        qData.pages,
+        pageParams.last,
+        pageParams,
+      );
+
+      final prev = options.getPreviousPageParam?.call(
+        qData.pages.first,
+        qData.pages,
+        pageParams.first,
+        pageParams,
+      );
+
+      hasNextPage.value = next != null;
+      hasPreviousPage.value = prev != null;
+    }
+  }
+
+  Future<void> fetchInitial() async {
+    if (cached == null) {
+      isLoading.value = true;
+    }
+    _fetchingQueries.add(options.queryKey);
+    updateIsFetching();
+
+    await client.fetchInfiniteQuery(
+      options: options,
+      pageParam: options.initialPageParam,
+      direction: FetchDirection.forward,
+    );
+
+    _fetchingQueries.remove(options.queryKey);
+    updateIsFetching();
+
+    final latest = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
+      options.queryKey,
+    );
+    if (latest != null) updateFromQuery(latest);
+
+    isLoading.value = false;
+  }
+
+  Future<void> refetch() async {
+    // ✅ Start refetch
+    isFetching.value = true;
+    isError.value = false;
+    error.value = null;
+
+    try {
+      _fetchingQueries.add(options.queryKey);
+      updateIsFetching();
+
+      await client.fetchInfiniteQuery(
+        options: options,
+        pageParam: options.initialPageParam,
+        direction: FetchDirection.forward,
+      );
+
+      _fetchingQueries.remove(options.queryKey);
+      updateIsFetching();
+      // Call the queryFn again with the initial pageParam
+      final newData = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
+        options.queryKey,
+      );
+
+      // ✅ Update state with fresh data
+      data.value = newData?.data;
+      isSuccess.value = true;
+      isError.value = false;
+      error.value = null;
+
+      // ✅ Recompute pagination flags
+      hasNextPage.value =
+          newData?.data?.pageParams.isNotEmpty ?? false; // adjust logic
+      hasPreviousPage.value = false; // depends on your API
+    } catch (e) {
+      // ✅ Handle error, keep old data
+      isError.value = true;
+      error.value = e;
+      isSuccess.value = false;
+    } finally {
+      // ✅ Always stop fetching
+      isFetching.value = false;
+    }
+  }
 
   if (cached != null && cached.isStale(options.staleTime)) {
     data.value = cached.data;
@@ -182,6 +299,7 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
           );
         }
       },
+      refetch: refetch,
     );
   }
 
@@ -189,76 +307,6 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
     options: options,
     queryKey: options.queryKey,
   );
-
-  void updateIsFetching() {
-    isFetching.value = _fetchingQueries.contains(options.queryKey);
-  }
-
-  void updateFromQuery(InfinitQuery<TQueryFnData, T, TPageParam> q) {
-    final qData = q.data;
-    if (qData == null) return;
-
-    List<TPageParam> pageParams = [];
-    try {
-      pageParams = qData.pageParams.cast<TPageParam>();
-    } catch (_) {
-      return;
-    }
-
-    data.value = InfiniteData<TQueryFnData, TPageParam>(
-      pages: qData.pages,
-      pageParams: pageParams,
-    );
-
-    isLoading.value = q.isLoading;
-    updateIsFetching();
-    isSuccess.value = q.status == QueryStatus.success;
-    isError.value = q.status == QueryStatus.error;
-    error.value = q.error;
-
-    if (qData.pages.isNotEmpty) {
-      final next = options.getNextPageParam(
-        qData.pages.last,
-        qData.pages,
-        pageParams.last,
-        pageParams,
-      );
-
-      final prev = options.getPreviousPageParam?.call(
-        qData.pages.first,
-        qData.pages,
-        pageParams.first,
-        pageParams,
-      );
-
-      hasNextPage.value = next != null;
-      hasPreviousPage.value = prev != null;
-    }
-  }
-
-  Future<void> fetchInitial() async {
-    if (cached == null) {
-      isLoading.value = true;
-    }
-    _fetchingQueries.add(options.queryKey);
-    updateIsFetching();
-
-    await client.fetchInfiniteQuery(
-      options: options,
-      pageParam: options.initialPageParam,
-      direction: FetchDirection.forward,
-    );
-
-    _fetchingQueries.remove(options.queryKey);
-    updateIsFetching();
-
-    final latest = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
-      options.queryKey,
-    );
-    if (latest != null) updateFromQuery(latest);
-
-    isLoading.value = false;
-  }
 
   client.subscribeInfinite(options.queryKey, (query) {
     updateFromQuery(query as InfinitQuery<TQueryFnData, T, TPageParam>);
@@ -337,5 +385,6 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
       _fetchingQueries.remove(options.queryKey);
       updateIsFetching();
     },
+    refetch: refetch,
   );
 }

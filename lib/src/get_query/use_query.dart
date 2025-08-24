@@ -8,15 +8,19 @@ class UseQueryResult<T> {
   final Rx<T?> data;
   final Rx<Object?> error;
   final RxBool isLoading;
+  final RxBool isError;
   final RxBool isFetching;
   final Rx<QueryStatus> status;
+  final Future<void> Function() refetch;
 
   UseQueryResult({
     required this.data,
     required this.error,
     required this.isLoading,
+    required this.isError,
     required this.isFetching,
     required this.status,
+    required this.refetch,
   });
 }
 
@@ -57,6 +61,7 @@ UseQueryResult<T> useQuery<T>({
   final Rx<T?> data = Rx<T?>(null);
   final Rx<Object?> error = Rx<Object?>(null);
   final RxBool isLoading = false.obs;
+  final RxBool isError = false.obs; 
   final RxBool isFetching = false.obs;
   final Rx<QueryStatus> status = QueryStatus.idle.obs;
 
@@ -77,11 +82,13 @@ UseQueryResult<T> useQuery<T>({
     error.value = query.error;
     status.value = query.status;
     isFetching.value = query.status == QueryStatus.loading;
+    isError.value = query.status == QueryStatus.error; 
   }
 
-  void fetch() async {
+  Future<void> fetch() async {
     isFetching.value = true;
     isLoading.value = true;
+    isError.value = false;
     status.value = QueryStatus.loading;
 
     try {
@@ -91,6 +98,25 @@ UseQueryResult<T> useQuery<T>({
       status.value = QueryStatus.success;
     } catch (e) {
       error.value = e;
+      isError.value = true; 
+      status.value = QueryStatus.error;
+    } finally {
+      isLoading.value = false;
+      isFetching.value = false;
+    }
+  }
+  
+  Future<void> refetch() async {
+    isFetching.value = true;
+    isError.value = false;
+    try {
+      final result = await queryClient.fetchQuery<T>(options: options);
+      data.value = result;
+      error.value = null;
+      status.value = QueryStatus.success;
+    } catch (e) {
+      error.value = e;
+      isError.value = true; 
       status.value = QueryStatus.error;
     } finally {
       isLoading.value = false;
@@ -102,18 +128,26 @@ UseQueryResult<T> useQuery<T>({
   queryClient.subscribe(queryKey, updateFromQuery);
 
   final existingQuery = queryClient.getQueryState<T>(queryKey);
-  if (existingQuery != null && !existingQuery.isStale(staleTime)) {
-    updateFromQuery(existingQuery);
+  if (existingQuery != null) {
+    if (!existingQuery.options!.enabled || !existingQuery.isStale(staleTime)) {
+      updateFromQuery(existingQuery);
+    }
   } else {
     fetch();
   }
-  
+  // if (existingQuery != null && !existingQuery.isStale(staleTime)) {
+  //   updateFromQuery(existingQuery);
+  // } else if(){
+  //   fetch();
+  // }
 
   return UseQueryResult<T>(
     data: data,
     error: error,
     isLoading: isLoading,
+    isError: isError,
     isFetching: isFetching,
     status: status,
+    refetch: refetch,
   );
 }
