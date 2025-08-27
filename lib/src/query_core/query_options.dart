@@ -12,7 +12,7 @@ class QueryOptions<T> {
   // gc
   final Duration? gcTime;
 
-  final void Function(T data)? onSuccess;
+  final void Function(T? data)? onSuccess;
   final void Function(Object error)? onError;
 
   const QueryOptions({

@@ -55,7 +55,7 @@ UseQueryResult<T> useQuery<T>({
   int retry = 3,
   Duration Function(int attempt, Object error)? retryDelay,
   bool? retryOnMount,
-  void Function(T data)? onSuccess,
+  void Function(T? data)? onSuccess,
   void Function(Object error)? onError,
 }) {
   final queryClient = QueryClient.instance;
