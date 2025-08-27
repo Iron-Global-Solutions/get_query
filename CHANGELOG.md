@@ -1,5 +1,5 @@
-## 1.0.0+9
-feat(query): add onSuccess, onError and onSettled callbacks
+## 1.0.0+10
+fix(use-query): onSuccess can return null data
 
 ### Initial Release
 
