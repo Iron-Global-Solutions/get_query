@@ -13,8 +13,7 @@ class InfiniteQueryCache<TQueryFnData, T, TPageParam>
   final List<void Function(InfiniteQueryCacheNotifyEvent event)> _subscribers =
       [];
 
-  static InfiniteQueryCache get to =>
-      Get.find<InfiniteQueryCache>();
+  static InfiniteQueryCache get to => Get.find<InfiniteQueryCache>();
 
   Map<String, InfinitQuery<dynamic, dynamic, dynamic>> get queries => _queries;
   final Map<String, List<void Function(InfinitQuery)>> _listeners = {};
@@ -38,18 +37,18 @@ class InfiniteQueryCache<TQueryFnData, T, TPageParam>
     return query as InfinitQuery<TQueryFnData, T, TPageParam>?;
   }
 
-    List<InfinitQuery<TQueryFnData, T, TPageParam>> findAll({String? queryKey}) {
+  List<InfinitQuery<TQueryFnData, T, TPageParam>> findAll({String? queryKey}) {
     if (queryKey == null) {
-      return _queries.values.toList() as List<InfinitQuery<TQueryFnData, T, TPageParam>>;
+      return _queries.values.toList()
+          as List<InfinitQuery<TQueryFnData, T, TPageParam>>;
     }
 
     return _queries.entries
-        .where((entry) => entry.key.startsWith(queryKey))
-        .map((e) => e.value)
-        .toList() as List<InfinitQuery<TQueryFnData, T, TPageParam>>;
+            .where((entry) => entry.key.startsWith(queryKey))
+            .map((e) => e.value)
+            .toList()
+        as List<InfinitQuery<TQueryFnData, T, TPageParam>>;
   }
-
-  
 
   void fetchQueryCache<TQueryFnData, T, TPageParam>(
     InfinitQuery<TQueryFnData, T, TPageParam> query,
@@ -76,6 +75,9 @@ class InfiniteQueryCache<TQueryFnData, T, TPageParam>
   }
 
   void clear() {
+    for (final query in _queries.values) {
+      query.dispose();
+    }
     _queries.clear();
   }
 
@@ -90,5 +92,4 @@ class InfiniteQueryCache<TQueryFnData, T, TPageParam>
   InfinitQuery? getQuery(String queryKey) {
     return _queries[queryKey];
   }
-
 }

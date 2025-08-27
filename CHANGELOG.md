@@ -1,5 +1,5 @@
-## 1.0.0+7
-- feat(query): add refetch support to useQuery and useInfiniteQuery
+## 1.0.0+8
+fix(query-cache): clear method disposes all queries
 
 ### Initial Release
 

@@ -5,11 +5,9 @@ import 'package:get_query/src/query_core/query.dart';
 import 'package:get_query/src/query_core/query_cache_notify_event.dart';
 import 'package:get_query/src/query_core/subscribable.dart';
 
-
 typedef QueryCacheListener = void Function(QueryCacheNotifyEvent event);
 
 class QueryCache<T> extends Subscribable<QueryCacheListener> {
-
   final void Function(Object error)? onError;
   final void Function(T data)? onSuccess;
   final void Function(T? data, Object? error)? onSettled;
@@ -23,8 +21,6 @@ class QueryCache<T> extends Subscribable<QueryCacheListener> {
 
   Map<String, Query<dynamic>> get queries => _queries;
 
-
-  
   // ---------------------- API ------------------------
 
   // find
@@ -47,7 +43,6 @@ class QueryCache<T> extends Subscribable<QueryCacheListener> {
         .toList();
   }
 
-  
   // subscribe
   // ✅ Subscribe to cache updates
   VoidCallback subscribe(void Function(QueryCacheNotifyEvent event) listener) {
@@ -59,6 +54,9 @@ class QueryCache<T> extends Subscribable<QueryCacheListener> {
 
   // clear
   void clear() {
+    for (final query in _queries.values) {
+      query.dispose();
+    }
     _queries.clear();
   }
 
@@ -67,7 +65,7 @@ class QueryCache<T> extends Subscribable<QueryCacheListener> {
     _queries[query.key] = query;
     _notify(QueryCacheNotifyEvent(type: type, query: query));
   }
-  
+
   void removeQueryCache<T>(Query<T> query) {
     _queries.remove(query.key);
     _notify(QueryCacheNotifyEvent(type: EventType.removed, query: query));
@@ -78,5 +76,4 @@ class QueryCache<T> extends Subscribable<QueryCacheListener> {
       listener(event);
     }
   }
-
 }
