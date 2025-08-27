@@ -1,5 +1,5 @@
-## 1.0.0+8
-fix(query-cache): clear method disposes all queries
+## 1.0.0+9
+feat(query): add onSuccess, onError and onSettled callbacks
 
 ### Initial Release
 
