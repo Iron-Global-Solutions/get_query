@@ -53,15 +53,17 @@ UseQueryResult<T> useQuery<T>({
   List<String>? notifyOnChangeProps,
   Duration? gcTime,
   int retry = 3,
-  final Duration Function(int attempt, Object error)? retryDelay,
-  final bool? retryOnMount,
+  Duration Function(int attempt, Object error)? retryDelay,
+  bool? retryOnMount,
+  void Function(T data)? onSuccess,
+  void Function(Object error)? onError,
 }) {
   final queryClient = QueryClient.instance;
 
   final Rx<T?> data = Rx<T?>(null);
   final Rx<Object?> error = Rx<Object?>(null);
   final RxBool isLoading = false.obs;
-  final RxBool isError = false.obs; 
+  final RxBool isError = false.obs;
   final RxBool isFetching = false.obs;
   final Rx<QueryStatus> status = QueryStatus.idle.obs;
 
@@ -75,6 +77,8 @@ UseQueryResult<T> useQuery<T>({
     retry: retry,
     retryDelay: retryDelay,
     retryOnMount: retryOnMount,
+    onSuccess: onSuccess,
+    onError: onError,
   );
 
   void updateFromQuery(Query query) {
@@ -82,7 +86,7 @@ UseQueryResult<T> useQuery<T>({
     error.value = query.error;
     status.value = query.status;
     isFetching.value = query.status == QueryStatus.loading;
-    isError.value = query.status == QueryStatus.error; 
+    isError.value = query.status == QueryStatus.error;
   }
 
   Future<void> fetch() async {
@@ -96,16 +100,24 @@ UseQueryResult<T> useQuery<T>({
       data.value = result;
       error.value = null;
       status.value = QueryStatus.success;
+
+      if (options.onSuccess != null) {
+        options.onSuccess!(result);
+      }
     } catch (e) {
       error.value = e;
-      isError.value = true; 
+      isError.value = true;
       status.value = QueryStatus.error;
+
+      if (options.onError != null) {
+        options.onError!(e);
+      }
     } finally {
       isLoading.value = false;
       isFetching.value = false;
     }
   }
-  
+
   Future<void> refetch() async {
     isFetching.value = true;
     isError.value = false;
@@ -114,10 +126,17 @@ UseQueryResult<T> useQuery<T>({
       data.value = result;
       error.value = null;
       status.value = QueryStatus.success;
+
+      if (options.onSuccess != null) {
+        options.onSuccess!(result);
+      }
     } catch (e) {
       error.value = e;
-      isError.value = true; 
+      isError.value = true;
       status.value = QueryStatus.error;
+      if (options.onError != null) {
+        options.onError!(e);
+      }
     } finally {
       isFetching.value = false;
     }

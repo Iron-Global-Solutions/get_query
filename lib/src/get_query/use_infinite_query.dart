@@ -21,7 +21,7 @@ class UseInfiniteQueryResult<TQueryFnData, TPageParam> {
   final Future<void> Function() fetchNextPage;
   final Future<void> Function() fetchPreviousPage;
 
-  final Future<void> Function() refetch; 
+  final Future<void> Function() refetch;
 
   UseInfiniteQueryResult({
     required this.data,
@@ -34,7 +34,7 @@ class UseInfiniteQueryResult<TQueryFnData, TPageParam> {
     required this.hasPreviousPage,
     required this.fetchNextPage,
     required this.fetchPreviousPage,
-    required this.refetch, 
+    required this.refetch,
   });
 }
 
@@ -106,27 +106,45 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
   }
 
   Future<void> fetchInitial() async {
-    if (cached == null) {
-      isLoading.value = true;
+    try {
+      if (cached == null) {
+        isLoading.value = true;
+      }
+      _fetchingQueries.add(options.queryKey);
+      updateIsFetching();
+
+      final result = await client.fetchInfiniteQuery(
+        options: options,
+        pageParam: options.initialPageParam,
+        direction: FetchDirection.forward,
+      );
+
+      // ✅ trigger onSuccess
+      if (options.onSuccess != null) {
+        options.onSuccess!(result.data?.pages);
+      }
+      if (options.onSettled != null) {
+        options.onSettled!(result.data?.pages, null);
+      }
+
+      _fetchingQueries.remove(options.queryKey);
+      updateIsFetching();
+
+      final latest = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
+        options.queryKey,
+      );
+      if (latest != null) updateFromQuery(latest);
+
+      isLoading.value = false;
+    } catch (e) {
+      // ✅ trigger onError
+      if (options.onError != null) {
+        options.onError!(e);
+      }
+      if (options.onSettled != null) {
+        options.onSettled!(null, e);
+      }
     }
-    _fetchingQueries.add(options.queryKey);
-    updateIsFetching();
-
-    await client.fetchInfiniteQuery(
-      options: options,
-      pageParam: options.initialPageParam,
-      direction: FetchDirection.forward,
-    );
-
-    _fetchingQueries.remove(options.queryKey);
-    updateIsFetching();
-
-    final latest = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
-      options.queryKey,
-    );
-    if (latest != null) updateFromQuery(latest);
-
-    isLoading.value = false;
   }
 
   Future<void> refetch() async {
@@ -139,11 +157,19 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
       _fetchingQueries.add(options.queryKey);
       updateIsFetching();
 
-      await client.fetchInfiniteQuery(
+      final result = await client.fetchInfiniteQuery(
         options: options,
         pageParam: options.initialPageParam,
         direction: FetchDirection.forward,
       );
+
+      // ✅ trigger onSuccess
+      if (options.onSuccess != null) {
+        options.onSuccess!(result.data?.pages);
+      }
+      if (options.onSettled != null) {
+        options.onSettled!(result.data?.pages, null);
+      }
 
       _fetchingQueries.remove(options.queryKey);
       updateIsFetching();
@@ -167,6 +193,13 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
       isError.value = true;
       error.value = e;
       isSuccess.value = false;
+      // ✅ trigger onError
+      if (options.onError != null) {
+        options.onError!(e);
+      }
+      if (options.onSettled != null) {
+        options.onSettled!(null, e);
+      }
     } finally {
       // ✅ Always stop fetching
       isFetching.value = false;
@@ -317,6 +350,7 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
   final cachedQuery = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
     options.queryKey,
   );
+
   if (cachedQuery != null && cachedQuery.data != null) {
     updateFromQuery(cachedQuery);
   } else if (options.enabled && query.status == QueryStatus.idle) {

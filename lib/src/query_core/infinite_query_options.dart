@@ -1,3 +1,4 @@
+import 'package:get_query/get_query.dart';
 import 'package:get_query/src/query_core/query_function_context.dart';
 
 class InfiniteQueryOptions<TQueryFnData, TPageParam> {
@@ -40,6 +41,12 @@ class InfiniteQueryOptions<TQueryFnData, TPageParam> {
   final bool? retryOnMount;
   final Duration? gcTime;
 
+  /// ✅ Lifecycle callbacks (just like QueryOptions)
+  final void Function(List<TQueryFnData>? data)? onSuccess;
+  final void Function(Object error)? onError;
+  final void Function(List<TQueryFnData>? data, Object? error)? onSettled;
+
+
   const InfiniteQueryOptions({
     required this.queryKey,
     required this.queryFn,
@@ -54,5 +61,9 @@ class InfiniteQueryOptions<TQueryFnData, TPageParam> {
     this.retryDelay,
     this.retryOnMount,
     this.gcTime,
+
+    this.onSuccess,
+    this.onError,
+    this.onSettled,
   });
 }
