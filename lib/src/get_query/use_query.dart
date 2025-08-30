@@ -42,6 +42,7 @@ class UseQueryController<T> extends GetxController {
 
 UseQueryResult<T> useQuery<T>({
   required String queryKey,
+  T Function()? initialData,
   required Future<T> Function() queryFn,
   Duration staleTime = Duration.zero,
   bool enabled = true,
@@ -68,6 +69,7 @@ UseQueryResult<T> useQuery<T>({
   final Rx<QueryStatus> status = QueryStatus.idle.obs;
 
   final QueryOptions<T> options = QueryOptions(
+    initialData: initialData,
     queryKey: queryKey,
     queryFn: queryFn,
     staleTime: staleTime,
@@ -154,13 +156,15 @@ UseQueryResult<T> useQuery<T>({
       refetch();
     }
   } else {
-    fetch();
+    if (options.initialData != null) {
+      data.value = options.initialData!.call();
+      error.value = null;
+      status.value = QueryStatus.success;
+      refetch();
+    } else {
+      fetch();
+    }
   }
-  // if (existingQuery != null && !existingQuery.isStale(staleTime)) {
-  //   updateFromQuery(existingQuery);
-  // } else if(){
-  //   fetch();
-  // }
 
   return UseQueryResult<T>(
     data: data,

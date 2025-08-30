@@ -101,6 +101,22 @@ class QueryClient {
     // Add or update in cache and notify
     _cache.fetchQueryCache(existingQuery, EventType.added);
 
+    // if (existingQuery == null) {
+    //   final initData = options.initialData?.call();
+
+    //   existingQuery = Query<T>(
+    //     key: options.queryKey,
+    //     data: initData,
+    //     status: initData != null ? QueryStatus.success : QueryStatus.idle,
+    //     dataUpdatedAt: initData != null ? DateTime.now() : null,
+    //     options: options as QueryOptions<T>,
+    //   );
+
+    //   // push into cache immediately
+    //   _cache.fetchQueryCache(existingQuery, EventType.added);
+    // }
+    // existingQuery.status = QueryStatus.loading;
+
     try {
       T data = await _runWithRetry<T>(
         queryFn: options.queryFn as Future<T> Function(),

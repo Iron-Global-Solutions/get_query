@@ -1,5 +1,5 @@
-## 1.0.0+10
-fix(use-query): onSuccess can return null data
+## 1.0.0+11
+feat: add initialData support to useQuery for better state initialization
 
 ### Initial Release
 

@@ -15,6 +15,8 @@ class QueryOptions<T> {
   final void Function(T? data)? onSuccess;
   final void Function(Object error)? onError;
 
+  final T Function()? initialData;
+
   const QueryOptions({
     required this.queryKey,
     required this.queryFn,
@@ -30,5 +32,7 @@ class QueryOptions<T> {
 
     this.onSuccess,
     this.onError,
+
+    this.initialData, // new
   });
 }

@@ -31,7 +31,7 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  get_query: ^1.0.0
+  get_query: ^1.0.0+11
   ```
 
 ## Then import it:
