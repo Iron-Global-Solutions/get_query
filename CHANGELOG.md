@@ -1,5 +1,5 @@
-## 1.0.0+11
-feat: add initialData support to useQuery for better state initialization
+## 1.0.0+12
+fix(useInfiniteQuery): refetch all the pages instead of refetching just the first page
 
 ### Initial Release
 

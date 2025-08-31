@@ -10,7 +10,6 @@ import 'package:get_query/src/query_core/infinite_query_options.dart';
 import 'package:get_query/src/query_core/query_client.dart';
 import 'package:get_query/src/query_core/query_function_context.dart';
 
-
 class InfinitQuery<TQueryFnData, T, TPageParam> {
   final String queryKey;
   InfiniteData<TQueryFnData, TPageParam>? data;
@@ -133,16 +132,43 @@ class InfinitQuery<TQueryFnData, T, TPageParam> {
     final current =
         data ??
         InfiniteData<TQueryFnData, TPageParam>(pages: [], pageParams: []);
-    if (current.pageParams.contains(pageParam)) return;
-    final updatedData = direction == FetchDirection.forward
-        ? InfiniteData<TQueryFnData, TPageParam>(
-            pages: [...current.pages, newPage],
-            pageParams: [...current.pageParams, pageParam],
-          )
-        : InfiniteData<TQueryFnData, TPageParam>(
-            pages: [newPage, ...current.pages],
-            pageParams: [pageParam, ...current.pageParams],
-          );
+    // if (current.pageParams.contains(pageParam)) return;
+    // final updatedData = direction == FetchDirection.forward
+    //     ? InfiniteData<TQueryFnData, TPageParam>(
+    //         pages: [...current.pages, newPage],
+    //         pageParams: [...current.pageParams, pageParam],
+    //       )
+    //     : InfiniteData<TQueryFnData, TPageParam>(
+    //         pages: [newPage, ...current.pages],
+    //         pageParams: [pageParam, ...current.pageParams],
+    //       );
+
+    // setData(updatedData);
+
+    final existingIndex = current.pageParams.indexOf(pageParam);
+    List<TQueryFnData> newPages;
+    List<TPageParam> newParams;
+
+    if (existingIndex != -1) {
+      // replace existing page
+      newPages = [...current.pages];
+      newPages[existingIndex] = newPage;
+      newParams = [...current.pageParams];
+    } else {
+      // append as new page
+      if (direction == FetchDirection.forward) {
+        newPages = [...current.pages, newPage];
+        newParams = [...current.pageParams, pageParam];
+      } else {
+        newPages = [newPage, ...current.pages];
+        newParams = [pageParam, ...current.pageParams];
+      }
+    }
+
+    final updatedData = InfiniteData<TQueryFnData, TPageParam>(
+      pages: newPages,
+      pageParams: newParams,
+    );
 
     setData(updatedData);
   }
@@ -173,14 +199,12 @@ class InfinitQuery<TQueryFnData, T, TPageParam> {
       );
 
       count++;
-      if (next == null || count>l) break;
+      if (next == null || count > l) break;
       pageParam = next;
     }
 
     return InfiniteData(pages: pages, pageParams: pageParams);
   }
-
-
 }
 
 extension InfiniteFetchExtension<T, TQueryFnData, TPageParam>

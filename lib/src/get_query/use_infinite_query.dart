@@ -148,7 +148,6 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
   }
 
   Future<void> refetch() async {
-    // ✅ Start refetch
     isFetching.value = true;
     isError.value = false;
     error.value = null;
@@ -157,54 +156,130 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
       _fetchingQueries.add(options.queryKey);
       updateIsFetching();
 
-      final result = await client.fetchInfiniteQuery(
-        options: options,
-        pageParam: options.initialPageParam,
-        direction: FetchDirection.forward,
-      );
+      final d = data.value;
 
-      // ✅ trigger onSuccess
-      if (options.onSuccess != null) {
-        options.onSuccess!(result.data?.pages);
-      }
-      if (options.onSettled != null) {
-        options.onSettled!(result.data?.pages, null);
+      if (d != null && d.pageParams.isNotEmpty) {
+        // 🔁 Re-fetch all cached pages
+        for (int i = 0; i < d.pageParams.length; i++) {
+          final param = d.pageParams[i];
+          await client.fetchInfiniteQuery(
+            options: options,
+            pageParam: param,
+            direction: FetchDirection.forward,
+            force: true, // direction is irrelevant here
+          );
+        }
+      } else {
+        // fallback: just fetch the initial page
+        await client.fetchInfiniteQuery(
+          options: options,
+          pageParam: options.initialPageParam,
+          direction: FetchDirection.forward,
+        );
       }
 
       _fetchingQueries.remove(options.queryKey);
       updateIsFetching();
-      // Call the queryFn again with the initial pageParam
+
       final newData = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
         options.queryKey,
       );
 
-      // ✅ Update state with fresh data
       data.value = newData?.data;
       isSuccess.value = true;
       isError.value = false;
       error.value = null;
 
-      // ✅ Recompute pagination flags
-      hasNextPage.value =
-          newData?.data?.pageParams.isNotEmpty ?? false; // adjust logic
-      hasPreviousPage.value = false; // depends on your API
+      // recompute pagination flags
+      if (newData?.data != null && newData!.data!.pages.isNotEmpty) {
+        final next = options.getNextPageParam(
+          newData.data!.pages.last,
+          newData.data!.pages,
+          newData.data!.pageParams.last,
+          newData.data!.pageParams,
+        );
+        hasNextPage.value = next != null;
+        hasPreviousPage.value =
+            options.getPreviousPageParam?.call(
+              newData.data!.pages.first,
+              newData.data!.pages,
+              newData.data!.pageParams.first,
+              newData.data!.pageParams,
+            ) !=
+            null;
+      } else {
+        hasNextPage.value = false;
+        hasPreviousPage.value = false;
+      }
     } catch (e) {
-      // ✅ Handle error, keep old data
       isError.value = true;
       error.value = e;
       isSuccess.value = false;
-      // ✅ trigger onError
-      if (options.onError != null) {
-        options.onError!(e);
-      }
-      if (options.onSettled != null) {
-        options.onSettled!(null, e);
-      }
+      if (options.onError != null) options.onError!(e);
+      if (options.onSettled != null) options.onSettled!(null, e);
     } finally {
-      // ✅ Always stop fetching
       isFetching.value = false;
     }
   }
+
+  // Future<void> refetch() async {
+  //   // ✅ Start refetch
+  //   isFetching.value = true;
+  //   isError.value = false;
+  //   error.value = null;
+
+  //   try {
+  //     _fetchingQueries.add(options.queryKey);
+  //     updateIsFetching();
+
+  //     final result = await client.fetchInfiniteQuery(
+  //       options: options,
+  //       pageParam: options.initialPageParam,
+  //       direction: FetchDirection.forward,
+  //     );
+
+  //     // ✅ trigger onSuccess
+  //     if (options.onSuccess != null) {
+  //       options.onSuccess!(result.data?.pages);
+  //     }
+  //     if (options.onSettled != null) {
+  //       options.onSettled!(result.data?.pages, null);
+  //     }
+
+  //     _fetchingQueries.remove(options.queryKey);
+  //     updateIsFetching();
+  //     // Call the queryFn again with the initial pageParam
+  //     final newData = client.getInfiniteQueryState<TQueryFnData, T, TPageParam>(
+  //       options.queryKey,
+  //     );
+
+  //     // ✅ Update state with fresh data
+  //     data.value = newData?.data;
+  //     isSuccess.value = true;
+  //     isError.value = false;
+  //     error.value = null;
+
+  //     // ✅ Recompute pagination flags
+  //     hasNextPage.value =
+  //         newData?.data?.pageParams.isNotEmpty ?? false; // adjust logic
+  //     hasPreviousPage.value = false; // depends on your API
+  //   } catch (e) {
+  //     // ✅ Handle error, keep old data
+  //     isError.value = true;
+  //     error.value = e;
+  //     isSuccess.value = false;
+  //     // ✅ trigger onError
+  //     if (options.onError != null) {
+  //       options.onError!(e);
+  //     }
+  //     if (options.onSettled != null) {
+  //       options.onSettled!(null, e);
+  //     }
+  //   } finally {
+  //     // ✅ Always stop fetching
+  //     isFetching.value = false;
+  //   }
+  // }
 
   if (cached != null && cached.isStale(options.staleTime)) {
     data.value = cached.data;

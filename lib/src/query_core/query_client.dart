@@ -165,6 +165,7 @@ class QueryClient {
     required InfiniteQueryOptions<TQueryFnData, TPageParam> options,
     required TPageParam pageParam,
     required FetchDirection direction,
+    bool force = false,
   }) async {
     final key = options.queryKey;
     final existing = _infinitcache.find<TQueryFnData, T, TPageParam>(key);
@@ -205,7 +206,7 @@ class QueryClient {
     final isAlreadyFetched =
         existing?.data?.pageParams.contains(pageParam) ?? false;
 
-    if (isAlreadyFetched) {
+    if (isAlreadyFetched && !force) {
       if (existing!.isStale(options.staleTime)) {
         // Trigger background refetch only if NOT already fetching
         _backgroundRefetchInfiniteQuery(
@@ -299,7 +300,6 @@ class QueryClient {
       if (query.options?.gcTime != null) {
         query.resetGcTimer();
       }
-      print('invalidate fetch for query ${query.key}');
 
       if (shouldRefetch && query.options?.queryFn != null) {
         if (options.cancelRefetch && query.status == QueryStatus.loading) {
@@ -356,7 +356,6 @@ class QueryClient {
         infinitquery.resetGcTimer();
       }
 
-      print('invalidate fetch for query ${infinitquery.queryKey}');
 
       if (shouldRefetch) {
         if (options.cancelRefetch &&
