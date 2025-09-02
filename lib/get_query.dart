@@ -12,6 +12,7 @@ export 'src/query_core/query_client.dart';
 export 'src/query_core/query.dart';
 export 'src/query_core/infinite_query.dart';
 export 'src/query_core/query_function_context.dart';
+export 'src/query_core/online_manager.dart';
 
 // Types and options
 export 'src/query_core/query_options.dart';

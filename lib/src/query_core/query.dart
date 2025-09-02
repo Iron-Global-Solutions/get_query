@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:get_query/src/enums/query_status.dart';
-import 'package:get_query/src/query_core/connectivity_service.dart';
+import 'package:get_query/src/query_core/online_manager.dart';
 import 'package:get_query/src/query_core/query_cache.dart';
 import 'package:get_query/src/query_core/query_client.dart';
 import 'package:get_query/src/query_core/query_observer.dart';
@@ -80,7 +80,7 @@ class Query<T> {
   StreamSubscription? _connectivitySub;
 
   void _setupConnectivityListener() {
-    final connectivity = Get.find<ConnectivityService>();
+    final connectivity = Get.find<OnlineManager>();
     _connectivitySub = connectivity.isOnline.listen((online) {
 
       final isDataStale = isStale(options?.staleTime ?? Duration.zero);

@@ -3,7 +3,7 @@
 import 'package:get/get.dart';
 import 'query_core/query_cache.dart';
 import 'query_core/infinite_query_cache.dart';
-import 'query_core/connectivity_service.dart';
+import 'query_core/online_manager.dart';
 
 Future<void> setupGetQuery() async {
   // Prevent re-initialization
@@ -15,7 +15,7 @@ Future<void> setupGetQuery() async {
     Get.put(InfiniteQueryCache());
   }
 
-  if (!Get.isRegistered<ConnectivityService>()) {
-    await Get.putAsync(() async => ConnectivityService());
+  if (!Get.isRegistered<OnlineManager>()) {
+    await Get.putAsync(() async => OnlineManager());
   }
 }
