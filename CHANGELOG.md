@@ -1,5 +1,6 @@
-## 1.0.0+14
-fix(useQuery):  choosing between showing stale data first or fetching fresh data directly in the refetch
+## 1.0.0+15
+feat(core): add OnlineManager to track and manage connectivity state
+
 
 ### Initial Release
 
