@@ -1,4 +1,4 @@
-## 1.0.0+13
+## 1.0.0+14
 fix(useQuery):  choosing between showing stale data first or fetching fresh data directly in the refetch
 
 ### Initial Release
