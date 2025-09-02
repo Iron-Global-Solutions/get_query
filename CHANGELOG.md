@@ -1,5 +1,5 @@
-## 1.0.0+12
-fix(useInfiniteQuery): refetch all the pages instead of refetching just the first page
+## 1.0.0+13
+fix(useQuery):  choosing between showing stale data first or fetching fresh data directly in the refetch
 
 ### Initial Release
 

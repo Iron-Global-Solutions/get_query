@@ -58,10 +58,14 @@ class QueryClient {
   }
 
   // fetchQueryCache
-  Future<T> fetchQuery<T>({required QueryOptions options}) async {
+
+  Future<T> fetchQuery<T>({
+    required QueryOptions options,
+    bool force = false,
+  }) async {
     Query? existingQuery = _cache.find(options.queryKey);
     // ❌ Case 1: Disabled
-    if (!options.enabled) {
+    if (!options.enabled && !force) {
       if (existingQuery != null && existingQuery.data != null) {
         return existingQuery.data as T;
       }
@@ -70,7 +74,9 @@ class QueryClient {
 
     // ✅ Case 2: Use cached if not stale
 
-    if (existingQuery != null && !existingQuery.isStale(options.staleTime)) {
+    if (existingQuery != null &&
+        !existingQuery.isStale(options.staleTime) &&
+        !force) {
       // return existingQuery.data as T;
       if (existingQuery.data != null) {
         return existingQuery.data as T;
@@ -82,9 +88,13 @@ class QueryClient {
     // ✅ Case 3: We have cached data and stale (run background refetch)
     if (existingQuery != null && existingQuery.isStale(options.staleTime)) {
       if (existingQuery.data != null) {
-        // 🔄 Return stale data immediately and start background refetch
-        _backgroundRefetch<T>(existingQuery, options as QueryOptions<T>);
-        return existingQuery.data as T;
+        if (force) {
+          _backgroundRefetch<T>(existingQuery, options as QueryOptions<T>);
+        } else {
+          // 🔄 Return stale data immediately and start background refetch
+          _backgroundRefetch<T>(existingQuery, options as QueryOptions<T>);
+          return existingQuery.data as T;
+        }
       } else {
         _backgroundRefetch<T>(existingQuery, options as QueryOptions<T>);
       }
@@ -355,7 +365,6 @@ class QueryClient {
       if (infinitquery.options.gcTime != null) {
         infinitquery.resetGcTimer();
       }
-
 
       if (shouldRefetch) {
         if (options.cancelRefetch &&

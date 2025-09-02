@@ -120,11 +120,14 @@ UseQueryResult<T> useQuery<T>({
     }
   }
 
-  Future<void> refetch() async {
+  Future<void> refetch({bool force = false}) async {
     isFetching.value = true;
     isError.value = false;
     try {
-      final result = await queryClient.fetchQuery<T>(options: options);
+      final result = await queryClient.fetchQuery<T>(
+        options: options,
+        force: force,
+      );
       data.value = result;
       error.value = null;
       status.value = QueryStatus.success;
@@ -173,6 +176,6 @@ UseQueryResult<T> useQuery<T>({
     isError: isError,
     isFetching: isFetching,
     status: status,
-    refetch: refetch,
+    refetch:() => refetch(force: true),
   );
 }
