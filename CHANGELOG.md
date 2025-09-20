@@ -1,4 +1,4 @@
-## 1.0.0+15
+## 1.0.0+16
 feat(core): add OnlineManager to track and manage connectivity state
 
 
