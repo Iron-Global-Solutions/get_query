@@ -12,7 +12,7 @@ import 'package:get_query/src/query_core/query_function_context.dart';
 
 class InfinitQuery<TQueryFnData, T, TPageParam> {
   final String queryKey;
-  InfiniteData<TQueryFnData, TPageParam>? data;
+  InfiniteData<TQueryFnData, T,TPageParam>? data;
   Object? error;
   DateTime? dataUpdatedAt;
   QueryStatus status;
@@ -109,7 +109,7 @@ class InfinitQuery<TQueryFnData, T, TPageParam> {
     _startGcTimer();
   }
 
-  void setData(InfiniteData<TQueryFnData, TPageParam> newData) {
+  void setData(InfiniteData<TQueryFnData, T,TPageParam> newData) {
     data = newData;
     dataUpdatedAt = DateTime.now();
     status = QueryStatus.success; // Update status if needed
@@ -131,7 +131,7 @@ class InfinitQuery<TQueryFnData, T, TPageParam> {
 
     final current =
         data ??
-        InfiniteData<TQueryFnData, TPageParam>(pages: [], pageParams: []);
+        InfiniteData<TQueryFnData, T,TPageParam>(pages: [], pageParams: []);
     // if (current.pageParams.contains(pageParam)) return;
     // final updatedData = direction == FetchDirection.forward
     //     ? InfiniteData<TQueryFnData, TPageParam>(
@@ -165,7 +165,7 @@ class InfinitQuery<TQueryFnData, T, TPageParam> {
       }
     }
 
-    final updatedData = InfiniteData<TQueryFnData, TPageParam>(
+    final updatedData = InfiniteData<TQueryFnData, T,TPageParam>(
       pages: newPages,
       pageParams: newParams,
     );
@@ -173,7 +173,7 @@ class InfinitQuery<TQueryFnData, T, TPageParam> {
     setData(updatedData);
   }
 
-  Future<InfiniteData<TQueryFnData, TPageParam>> fetchAllPages(int l) async {
+  Future<InfiniteData<TQueryFnData, T,TPageParam>> fetchAllPages(int l) async {
     final pages = <TQueryFnData>[];
     final pageParams = <TPageParam>[];
 
@@ -226,7 +226,7 @@ extension InfiniteFetchExtension<T, TQueryFnData, TPageParam>
     // merge the page into pages[]
     final current =
         data ??
-        InfiniteData<TQueryFnData, TPageParam>(pages: [], pageParams: []);
+        InfiniteData<TQueryFnData, T,TPageParam>(pages: [], pageParams: []);
 
     final updated = direction == FetchDirection.forward
         ? current.copyWith(
@@ -243,13 +243,13 @@ extension InfiniteFetchExtension<T, TQueryFnData, TPageParam>
   }
 }
 
-extension InfiniteDataCopyWith<TQueryFnData, TPageParam>
-    on InfiniteData<TQueryFnData, TPageParam> {
-  InfiniteData<TQueryFnData, TPageParam> copyWith({
+extension InfiniteDataCopyWith<TQueryFnData, T,TPageParam>
+    on InfiniteData<TQueryFnData, T,TPageParam> {
+  InfiniteData<TQueryFnData, T,TPageParam> copyWith({
     List<TQueryFnData>? pages,
     List<TPageParam>? pageParams,
   }) {
-    return InfiniteData<TQueryFnData, TPageParam>(
+    return InfiniteData<TQueryFnData, T,TPageParam>(
       pages: pages ?? this.pages,
       pageParams: pageParams ?? this.pageParams,
     );

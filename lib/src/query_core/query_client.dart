@@ -500,7 +500,7 @@ class QueryClient {
       final oldData = query.data;
 
       if (oldData == null) {
-        query.data = InfiniteData<TQueryFnData, TPageParam>(
+        query.data = InfiniteData<TQueryFnData, T,TPageParam>(
           pages: [newPage],
           pageParams: [options.initialPageParam],
         );
@@ -516,7 +516,7 @@ class QueryClient {
           updatedParams.insert(0, options.initialPageParam);
         }
 
-        query.data = InfiniteData<TQueryFnData, TPageParam>(
+        query.data = InfiniteData<TQueryFnData, T,TPageParam>(
           pages: updatedPages,
           pageParams: updatedParams,
         );

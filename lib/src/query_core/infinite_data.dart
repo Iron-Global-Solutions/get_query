@@ -1,4 +1,4 @@
-class InfiniteData<TQueryFnData,TPageParam> {
+class InfiniteData<TQueryFnData,T,TPageParam> {
   final List<TQueryFnData> pages;
   final List<TPageParam> pageParams;
 

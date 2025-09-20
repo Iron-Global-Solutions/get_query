@@ -18,8 +18,8 @@ QueryBehavior<TQueryFnData, TError, T, TPageParam> infiniteQueryBehavior<
       final direction = context.fetchOptions?.meta?.fetchMore?.direction;
       final oldPages = context.state.data?.pages ?? [];
       final oldPageParams = context.state.data?.pageParams ?? [];
-      InfiniteData<TQueryFnData, TPageParam> result =
-          InfiniteData<TQueryFnData, TPageParam>(pages: [], pageParams: []);
+      InfiniteData<TQueryFnData, T,TPageParam> result =
+          InfiniteData<TQueryFnData, T,TPageParam>(pages: [], pageParams: []);
       int currentPage = 0;
 
       final QueryFunction<T, TPageParam> queryFn = ensureQueryFn(
@@ -28,8 +28,8 @@ QueryBehavior<TQueryFnData, TError, T, TPageParam> infiniteQueryBehavior<
         queryHash: context.options.queryHash,
       );
 
-      Future<InfiniteData<TQueryFnData, TPageParam>> fetchPage<T>({
-        required InfiniteData<TQueryFnData, TPageParam> data,
+      Future<InfiniteData<TQueryFnData, T,TPageParam>> fetchPage<T>({
+        required InfiniteData<TQueryFnData, T,TPageParam> data,
         dynamic param,
         bool? previous,
       }) async {
@@ -54,7 +54,7 @@ QueryBehavior<TQueryFnData, TError, T, TPageParam> infiniteQueryBehavior<
         final maxPages = context.options.maxPages ?? 0;
         final addTo = previous == true ? addToStart : addToEnd;
 
-        return InfiniteData<TQueryFnData, TPageParam>(
+        return InfiniteData<TQueryFnData, T,TPageParam>(
           pages: addTo(data.pages, page as TQueryFnData, maxPages),
           pageParams: addTo(data.pageParams, param, maxPages),
         );
@@ -63,7 +63,7 @@ QueryBehavior<TQueryFnData, TError, T, TPageParam> infiniteQueryBehavior<
       if (direction != null && oldPages.isNotEmpty) {
         final previous = direction == FetchDirection.backward;
         final pageParamFn = previous ? getPreviousPageParam : getNextPageParam;
-        final oldData = InfiniteData<TQueryFnData, TPageParam>(
+        final oldData = InfiniteData<TQueryFnData, T,TPageParam>(
           pages: oldPages as List<TQueryFnData>,
           pageParams: oldPageParams as List<TPageParam>,
         );
@@ -162,7 +162,7 @@ List<TQueryFnData> addToStart<TQueryFnData>(
 
 dynamic getNextPageParam<TQueryFnData, TPageParam, T>(
   InfiniteQueryPageParamsOptions<TQueryFnData, TPageParam> options,
-  InfiniteData<TQueryFnData, TPageParam> data,
+  InfiniteData<TQueryFnData, T,TPageParam> data,
 ) {
   final pages = data.pages;
   final pageParams = data.pageParams;
@@ -180,7 +180,7 @@ dynamic getNextPageParam<TQueryFnData, TPageParam, T>(
 
 dynamic getPreviousPageParam<TQueryFnData, TPageParam, T>(
   InfiniteQueryPageParamsOptions<TQueryFnData, TPageParam> options,
-  InfiniteData<TQueryFnData, TPageParam> data,
+  InfiniteData<TQueryFnData, T,TPageParam> data,
 ) {
   final pages = data.pages;
   final pageParams = data.pageParams;
@@ -196,9 +196,9 @@ dynamic getPreviousPageParam<TQueryFnData, TPageParam, T>(
 }
 
 /// Checks if there is a next page.
-bool hasNextPage<TQueryFnData, TPageParam>(
+bool hasNextPage<TQueryFnData, T,TPageParam>(
   InfiniteQueryPageParamsOptions<TQueryFnData, TPageParam> options,
-  InfiniteData<TQueryFnData, TPageParam>? data,
+  InfiniteData<TQueryFnData, T,TPageParam>? data,
 ) {
   if (data == null) return false;
   return getNextPageParam<TQueryFnData, TPageParam, dynamic>(options, data) !=
@@ -206,9 +206,9 @@ bool hasNextPage<TQueryFnData, TPageParam>(
 }
 
 /// Checks if there is a previous page.
-bool hasPreviousPage<TQueryFnData, TPageParam>(
+bool hasPreviousPage<TQueryFnData, T,TPageParam>(
   InfiniteQueryPageParamsOptions<TQueryFnData, TPageParam> options,
-  InfiniteData<TQueryFnData, TPageParam>? data,
+  InfiniteData<TQueryFnData, T,TPageParam>? data,
 ) {
   if (data == null || options.getPreviousPageParam == null) return false;
   return getPreviousPageParam<TQueryFnData, TPageParam, dynamic>(

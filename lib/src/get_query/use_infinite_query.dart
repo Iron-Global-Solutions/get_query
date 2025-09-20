@@ -8,8 +8,8 @@ import 'package:get_query/src/query_core/infinite_query_cache.dart';
 import 'package:get_query/src/query_core/infinite_query_options.dart';
 import 'package:get_query/src/query_core/query_client.dart';
 
-class UseInfiniteQueryResult<TQueryFnData, TPageParam> {
-  final Rx<InfiniteData<TQueryFnData, TPageParam>?> data;
+class UseInfiniteQueryResult<TQueryFnData, T, TPageParam> {
+  final Rx<InfiniteData<TQueryFnData, T, TPageParam>?> data;
   final RxBool isLoading;
   final RxBool isFetching;
   final RxBool isSuccess;
@@ -40,13 +40,13 @@ class UseInfiniteQueryResult<TQueryFnData, TPageParam> {
 
 final Set<String> _fetchingQueries = {};
 
-UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
+UseInfiniteQueryResult<TQueryFnData, T, TPageParam> useInfiniteQuery<
   TQueryFnData,
   TPageParam,
   T
 >({required InfiniteQueryOptions<TQueryFnData, TPageParam> options}) {
   final client = QueryClient.instance;
-  final Rx<InfiniteData<TQueryFnData, TPageParam>?> data = Rx(null);
+  final Rx<InfiniteData<TQueryFnData, T, TPageParam>?> data = Rx(null);
   final RxBool isLoading = false.obs;
   final RxBool isFetching = false.obs;
   final RxBool isSuccess = false.obs;
@@ -74,7 +74,7 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
       return;
     }
 
-    data.value = InfiniteData<TQueryFnData, TPageParam>(
+    data.value = InfiniteData<TQueryFnData, T, TPageParam>(
       pages: qData.pages,
       pageParams: pageParams,
     );
@@ -293,7 +293,7 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
         pageParams = qData.pageParams.cast<TPageParam>();
       } catch (_) {}
 
-      data.value = InfiniteData<TQueryFnData, TPageParam>(
+      data.value = InfiniteData<TQueryFnData, T, TPageParam>(
         pages: qData.pages,
         pageParams: pageParams,
       );
@@ -324,7 +324,7 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
       }
     }
 
-    return UseInfiniteQueryResult<TQueryFnData, TPageParam>(
+    return UseInfiniteQueryResult<TQueryFnData, T, TPageParam>(
       data: data,
       isLoading: isLoading,
       isFetching: isFetching,
@@ -362,7 +362,7 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
               options.queryKey,
             );
         if (latest != null && latest.data != null) {
-          data.value = InfiniteData<TQueryFnData, TPageParam>(
+          data.value = InfiniteData<TQueryFnData, T, TPageParam>(
             pages: latest.data!.pages,
             pageParams: latest.data!.pageParams.cast<TPageParam>(),
           );
@@ -401,7 +401,7 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
               options.queryKey,
             );
         if (latest != null && latest.data != null) {
-          data.value = InfiniteData<TQueryFnData, TPageParam>(
+          data.value = InfiniteData<TQueryFnData, T, TPageParam>(
             pages: latest.data!.pages,
             pageParams: latest.data!.pageParams.cast<TPageParam>(),
           );
@@ -433,7 +433,7 @@ UseInfiniteQueryResult<TQueryFnData, TPageParam> useInfiniteQuery<
     fetchInitial();
   }
 
-  return UseInfiniteQueryResult<TQueryFnData, TPageParam>(
+  return UseInfiniteQueryResult<TQueryFnData, T, TPageParam>(
     data: data,
     isLoading: isLoading,
     isFetching: isFetching,
