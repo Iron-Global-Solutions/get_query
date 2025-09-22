@@ -89,7 +89,21 @@ class QueryClient {
     if (existingQuery != null && existingQuery.isStale(options.staleTime)) {
       if (existingQuery.data != null) {
         if (force) {
-          _backgroundRefetch<T>(existingQuery, options as QueryOptions<T>);
+          // _backgroundRefetch<T>(existingQuery, options as QueryOptions<T>);
+          T data = await _runWithRetry<T>(
+            queryFn: options.queryFn as Future<T> Function(),
+            retry: options.retry,
+            retryDelay: options.retryDelay,
+          );
+
+          existingQuery
+            ..data = data
+            ..error = null
+            ..status = QueryStatus.success
+            ..dataUpdatedAt = DateTime.now();
+
+          _updateQuery(existingQuery);
+          return data;
         } else {
           // 🔄 Return stale data immediately and start background refetch
           _backgroundRefetch<T>(existingQuery, options as QueryOptions<T>);
@@ -447,7 +461,6 @@ class QueryClient {
     QueryOptions<T> options,
   ) async {
     // Avoid refetching if one is already in progress
-
     existingQuery.status = QueryStatus.loading;
     _cache.fetchQueryCache(
       existingQuery,
@@ -500,7 +513,7 @@ class QueryClient {
       final oldData = query.data;
 
       if (oldData == null) {
-        query.data = InfiniteData<TQueryFnData, T,TPageParam>(
+        query.data = InfiniteData<TQueryFnData, T, TPageParam>(
           pages: [newPage],
           pageParams: [options.initialPageParam],
         );
@@ -516,7 +529,7 @@ class QueryClient {
           updatedParams.insert(0, options.initialPageParam);
         }
 
-        query.data = InfiniteData<TQueryFnData, T,TPageParam>(
+        query.data = InfiniteData<TQueryFnData, T, TPageParam>(
           pages: updatedPages,
           pageParams: updatedParams,
         );
